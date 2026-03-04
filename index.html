@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Sign2000 Mirror Builder</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+
+body{
+font-family:Arial;
+background:#f4f1ea;
+margin:0;
+padding:40px;
+}
+
+/* STEP */
+
+.step{
+display:none;
+}
+
+.step.active{
+display:block;
+}
+
+/* SHAPES */
+
+.shape-grid{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:20px;
+}
+
+.shape{
+border:2px solid #ccc;
+padding:30px;
+text-align:center;
+cursor:pointer;
+border-radius:10px;
+}
+
+.shape.selected{
+border:3px solid green;
+background:#e8f5e9;
+}
+
+/* INPUT */
+
+input,select{
+width:100%;
+padding:10px;
+margin-top:10px;
+}
+
+/* BUTTONS */
+
+button{
+margin-top:20px;
+padding:15px;
+width:200px;
+cursor:pointer;
+margin-right:10px;
+}
+
+/* RESULT */
+
+.price{
+font-size:32px;
+margin-top:30px;
+color:green;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- STEP 1 -->
+
+<div id="step1" class="step active">
+
+<h1>เลือกรูปทรงกระจก</h1>
+
+<div class="shape-grid">
+
+<div class="shape" data-shape="rect">สี่เหลี่ยม</div>
+<div class="shape" data-shape="circle">วงกลม</div>
+<div class="shape" data-shape="capsule">แคปซูล</div>
+<div class="shape" data-shape="custom">กำหนดเอง</div>
+
+</div>
+
+<br>
+
+<button onclick="goNext()">Next</button>
+
+</div>
+
+
+
+<!-- RECT SIZE -->
+
+<div id="rectPage" class="step">
+
+<h1>กำหนดขนาด (กว้าง × สูง)</h1>
+
+<label>กว้าง (cm)</label>
+<input id="width" type="number" value="60">
+
+<label>สูง (cm)</label>
+<input id="height" type="number" value="80">
+
+<br>
+
+<button onclick="backToShape()">Back</button>
+<button onclick="goOption()">Next</button>
+
+</div>
+
+
+
+<!-- CIRCLE SIZE -->
+
+<div id="circlePage" class="step">
+
+<h1>กำหนดรัศมี</h1>
+
+<label>รัศมี (cm)</label>
+<input id="radius" type="number" value="40">
+
+<br>
+
+<button onclick="backToShape()">Back</button>
+<button onclick="goOption()">Next</button>
+
+</div>
+
+
+
+<!-- OPTIONS -->
+
+<div id="optionPage" class="step">
+
+<h1>เลือก Option</h1>
+
+<label>ทิศทางไฟ</label>
+
+<select id="lightType">
+<option value="front">ออกหน้า</option>
+<option value="back">ออกหลัง</option>
+<option value="both">หน้า + หลัง</option>
+</select>
+
+<label>ระบบสีไฟ</label>
+
+<select id="colorType">
+<option value="single">สีเดียว</option>
+<option value="triple">3 สี</option>
+</select>
+
+<label>Switch</label>
+
+<select id="switchType">
+<option value="touch">Touch</option>
+<option value="ir">IR Wave</option>
+</select>
+
+<label>Defog</label>
+
+<select id="defog">
+<option value="no">ไม่มี</option>
+<option value="yes">มี</option>
+</select>
+
+<br>
+
+<button onclick="backToSize()">Back</button>
+<button onclick="calculate()">คำนวณราคา</button>
+
+</div>
+
+
+
+<!-- RESULT -->
+
+<div id="resultPage" class="step">
+
+<h1>ราคาโดยประมาณ</h1>
+
+<div id="price" class="price">-</div>
+
+<br>
+
+<button onclick="backToOption()">Back</button>
+<button onclick="location.reload()">เริ่มใหม่</button>
+
+</div>
+
+
+
+<script>
+
+/* SELECT SHAPE */
+
+let selectedShape=""
+
+const shapes=document.querySelectorAll(".shape")
+
+shapes.forEach(shape=>{
+
+shape.onclick=function(){
+
+shapes.forEach(s=>s.classList.remove("selected"))
+
+this.classList.add("selected")
+
+selectedShape=this.dataset.shape
+
+}
+
+})
+
+
+/* GO NEXT */
+
+function goNext(){
+
+if(selectedShape===""){
+
+alert("กรุณาเลือกทรงกระจก")
+
+return
+
+}
+
+if(selectedShape==="custom"){
+
+alert("กรุณาติดต่อทีมงาน Sign2000")
+
+return
+
+}
+
+hideAll()
+
+if(selectedShape==="circle"){
+
+document.getElementById("circlePage").classList.add("active")
+
+}else{
+
+document.getElementById("rectPage").classList.add("active")
+
+}
+
+}
+
+
+/* GO OPTION */
+
+function goOption(){
+
+hideAll()
+
+document.getElementById("optionPage").classList.add("active")
+
+}
+
+
+/* BACK FUNCTIONS */
+
+function backToShape(){
+
+hideAll()
+
+document.getElementById("step1").classList.add("active")
+
+}
+
+function backToSize(){
+
+hideAll()
+
+if(selectedShape==="circle"){
+
+document.getElementById("circlePage").classList.add("active")
+
+}else{
+
+document.getElementById("rectPage").classList.add("active")
+
+}
+
+}
+
+function backToOption(){
+
+hideAll()
+
+document.getElementById("optionPage").classList.add("active")
+
+}
+
+
+/* HIDE ALL STEPS */
+
+function hideAll(){
+
+document.querySelectorAll(".step").forEach(step=>{
+
+step.classList.remove("active")
+
+})
+
+}
+
+
+/* CALCULATE PRICE */
+
+function calculate(){
+
+let width=document.getElementById("width")?.value
+let height=document.getElementById("height")?.value
+let radius=document.getElementById("radius")?.value
+
+let light=document.getElementById("lightType").value
+let color=document.getElementById("colorType").value
+let sw=document.getElementById("switchType").value
+let defog=document.getElementById("defog").value
+
+
+let area=0
+
+if(selectedShape==="circle"){
+
+area=Math.PI*radius*radius
+
+}else{
+
+area=width*height
+
+}
+
+
+let glassRate=0.30
+
+let glassCost=area*glassRate
+
+let grind=400
+
+let led=light==="both"?1200:light==="back"?700:500
+
+let driver=color==="single"?250:600
+
+let switchCost=sw==="touch"?300:600
+
+let defogCost=defog==="yes"?500:0
+
+let overhead=500
+
+
+let cost=
+glassCost+
+grind+
+led+
+driver+
+switchCost+
+defogCost+
+overhead
+
+
+let price=Math.round(cost*1.25)
+
+
+document.getElementById("price").innerText=price+" บาท"
+
+
+hideAll()
+
+document.getElementById("resultPage").classList.add("active")
+
+}
+
+</script>
+
+</body>
+</html>
